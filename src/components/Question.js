@@ -4,11 +4,24 @@ import Answer from "./Answer";
 class Question extends Component {
 	constructor(props) {
 		super(props);
-		const correctAnswer = {text: this.props.correctAnswer, correct: true};
-		const incorrectAnswers = this.props.incorrectAnswers.map(answer => ({text: answer, correct: false}));
 		this.state = {
-			allAnswers: this.shuffleQuestions([correctAnswer, ...incorrectAnswers])
+			allAnswers: this.combineQuestions(this.props.correctAnswer, this.props.incorrectAnswers)
 		}
+		this.onSubmit = this.onSubmit.bind(this);
+		this.combineQuestions = this.combineQuestions.bind(this);
+		this.shuffleQuestions = this.shuffleQuestions.bind(this);
+	}
+
+	componentWillReceiveProps(newProps) {
+		this.setState({
+			allAnswers: this.combineQuestions(newProps.correctAnswer, newProps.incorrectAnswers)
+		});
+	}
+
+	combineQuestions(correct, incorrects) {
+		const correctAnswer = {text: correct, correct: true};
+		const incorrectAnswers = incorrects.map(answer => ({text: answer, correct: false}));
+		return  this.shuffleQuestions([correctAnswer, ...incorrectAnswers]);
 	}
 
 	shuffleQuestions(array) {
@@ -31,12 +44,19 @@ class Question extends Component {
 	  return array;
 	}
 
+	onSubmit(correct) {
+		this.props.submit(correct);
+	}
+
 	render() {
 		return(
-			<div className="question">
-				<p>{this.props.category}</p>
-				<h3>{this.props.question}</h3>
-				{this.state.allAnswers.map((answer, index) => <Answer key={index} answer={answer}/>)}
+			<div>
+				<div className="question">
+					<p>{this.props.category}</p>
+					<h3>{this.props.question}</h3>
+					{this.state.allAnswers.map((answer, index) => <Answer submit={this.onSubmit} 
+							key={index} answer={answer}/>)}
+				</div>
 			</div>
 		);
 	}
